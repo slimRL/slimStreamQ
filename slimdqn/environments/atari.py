@@ -38,6 +38,10 @@ class AtariEnv:
     def observation(self) -> np.ndarray:
         return np.copy(self.state_[:, :, -1])
 
+    @observation.setter
+    def observation(self, obs):
+        self.state_[:, :, -1] = obs
+
     @property
     def state(self) -> np.ndarray:
         return jnp.array(self.state_, dtype=jnp.float32)

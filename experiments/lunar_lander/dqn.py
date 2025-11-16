@@ -33,10 +33,8 @@ def run(argvs=sys.argv[1:]):
         env.n_actions,
         features=p["features"],
         architecture_type=p["architecture_type"],
-        learning_rate=p["learning_rate"],
         gamma=p["gamma"],
         update_horizon=p["update_horizon"],
-        data_to_update=p["data_to_update"],
         target_update_period=p["target_update_period"],
     )
     train(train_key, p, agent, env, rb)

@@ -5,14 +5,14 @@ from tqdm import tqdm
 
 from experiments.base.utils import save_data
 from slimdqn.algorithms.dqn import DQN
-from slimdqn.sample_collection.utils import collect_single_sample
+from slimdqn.sample_collection.utils import SampleCollector
 
 
 def train(key: jax.random.PRNGKey, p: dict, agent: DQN, env):
-    epsilon_schedule = optax.linear_schedule(1.0, p["epsilon_end"], p["epsilon_duration"])
-
     n_training_steps = 0
-    env.reset()
+    sample_collector = SampleCollector(
+        env, agent.best_action, optax.linear_schedule(1.0, p["epsilon_end"], p["epsilon_duration"], p["gamma"])
+    )
     episode_returns_per_epoch = [[0]]
     episode_lengths_per_epoch = [[0]]
 
@@ -22,9 +22,7 @@ def train(key: jax.random.PRNGKey, p: dict, agent: DQN, env):
 
         while n_training_steps_epoch < p["n_training_steps_per_epoch"] or not has_reset:
             key, exploration_key = jax.random.split(key)
-            reward, has_reset, sample = collect_single_sample(
-                exploration_key, env, agent, p, epsilon_schedule, n_training_steps
-            )
+            reward, has_reset, sample = sample_collector(exploration_key, agent.params, n_training_steps)
 
             n_training_steps_epoch += 1
             n_training_steps += 1
@@ -35,7 +33,7 @@ def train(key: jax.random.PRNGKey, p: dict, agent: DQN, env):
                 episode_returns_per_epoch[idx_epoch].append(0)
                 episode_lengths_per_epoch[idx_epoch].append(0)
 
-            agent.update_online_params(n_training_steps, sample)
+            agent.update_online_params(sample)
             target_updated, logs = agent.update_target_params(n_training_steps)
 
             if target_updated:

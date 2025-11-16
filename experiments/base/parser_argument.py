@@ -56,39 +56,11 @@ def add_base_arguments(parser: argparse.ArgumentParser):
         default=[100, 100],
     )
     parser.add_argument(
-        "-rbc",
-        "--replay_buffer_capacity",
-        help="Replay Buffer capacity.",
-        type=int,
-        default=10_000,
-    )
-    parser.add_argument(
-        "-bs",
-        "--batch_size",
-        help="Batch size for training.",
-        type=int,
-        default=32,
-    )
-    parser.add_argument(
-        "-n",
-        "--update_horizon",
-        help="Value of n in n-step TD update.",
-        type=int,
-        default=1,
-    )
-    parser.add_argument(
         "-gamma",
         "--gamma",
         help="Discounting factor.",
         type=float,
         default=0.99,
-    )
-    parser.add_argument(
-        "-lr",
-        "--learning_rate",
-        help="Learning rate.",
-        type=float,
-        default=3e-4,
     )
     parser.add_argument(
         "-horizon",
@@ -98,12 +70,19 @@ def add_base_arguments(parser: argparse.ArgumentParser):
         default=1000,
     )
     parser.add_argument(
+        "-lamdba",
+        "--lamdba_trace",
+        help="Lambda coefficient for eligibility traces.",
+        type=float,
+        default=0.8,
+    )
+    parser.add_argument(
         "-at",
         "--architecture_type",
         help="Type of architecture.",
         type=str,
         default="fc",
-        choices=["cnn", "impala", "fc"],
+        choices=["cnn", "fc"],
     )
     parser.add_argument(
         "-ne",
@@ -120,25 +99,11 @@ def add_base_arguments(parser: argparse.ArgumentParser):
         default=10_000,
     )
     parser.add_argument(
-        "-dtu",
-        "--data_to_update",
-        help="Number of data points to collect per online Q-network update.",
-        type=float,
-        default=1,
-    )
-    parser.add_argument(
         "-tup",
         "--target_update_period",
         help="Number of training steps before updating the target Q-network.",
         type=int,
         default=200,
-    )
-    parser.add_argument(
-        "-nis",
-        "--n_initial_samples",
-        help="Number of initial samples before the training starts.",
-        type=int,
-        default=1_000,
     )
     parser.add_argument(
         "-ee",
