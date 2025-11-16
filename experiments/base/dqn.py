@@ -11,7 +11,11 @@ from slimdqn.sample_collection.utils import SampleCollector
 def train(key: jax.random.PRNGKey, p: dict, agent: DQN, env):
     n_training_steps = 0
     sample_collector = SampleCollector(
-        env, agent.best_action, optax.linear_schedule(1.0, p["epsilon_end"], p["epsilon_duration"], p["gamma"])
+        env,
+        agent.best_action,
+        optax.linear_schedule(1.0, p["epsilon_end"], p["epsilon_duration"]),
+        p["horizon"],
+        p["gamma"],
     )
     episode_returns_per_epoch = [[0]]
     episode_lengths_per_epoch = [[0]]

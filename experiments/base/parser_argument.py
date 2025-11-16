@@ -70,8 +70,8 @@ def add_base_arguments(parser: argparse.ArgumentParser):
         default=1000,
     )
     parser.add_argument(
-        "-lamdba",
-        "--lamdba_trace",
+        "-lambda",
+        "--lambda_trace",
         help="Lambda coefficient for eligibility traces.",
         type=float,
         default=0.8,

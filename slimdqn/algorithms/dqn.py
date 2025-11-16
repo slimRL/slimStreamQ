@@ -4,7 +4,7 @@ import jax
 import jax.numpy as jnp
 from flax.core import FrozenDict
 
-from slimdqn.algorithms.architectures.dqn import DQNNet, prune
+from slimdqn.algorithms.architectures.dqn import DQNNet
 from slimdqn.sample_collection.utils import Sample
 
 
@@ -22,15 +22,14 @@ class DQN:
     ):
         self.network = DQNNet(features, architecture_type, n_actions)
         self.params = self.network.init(key, jnp.zeros(observation_dim, dtype=jnp.float32))
-        self.params = prune(self.params, 0.9)
 
-        self.trace = jax.tree.map(lambda w: jnp.zeros_like(w))(self.params)
-        self.avg_learning_rate = 0
+        self.trace = jax.tree.map(lambda w: jnp.zeros_like(w), self.params)
 
         self.gamma = gamma
         self.lambda_trace = lambda_trace
         self.target_update_period = target_update_period
         self.cumulated_loss = 0
+        self.avg_learning_rate = 0
 
     def update_online_params(self, sample: Sample):
         self.params, self.trace, learning_rate, loss = self.learn_on_sample(self.params, self.trace, sample)
@@ -44,23 +43,27 @@ class DQN:
                 "avg_learning_rate": self.avg_learning_rate / self.target_update_period,
             }
             self.cumulated_loss = 0
+            self.avg_learning_rate = 0
 
             return True, logs
         return False, {}
 
     @partial(jax.jit, static_argnames="self")
-    def learn_on_sample(self, params: FrozenDict, trace: FrozenDict, learning_rate, sample: Sample):
+    def learn_on_sample(self, params: FrozenDict, trace: FrozenDict, sample: Sample):
         q_value, grad_q_value = jax.value_and_grad(lambda p: self.network.apply(p, sample.state)[sample.action])(params)
         td_error = self.compute_target(params, sample) - q_value
 
         trace = jax.tree.map(lambda t, g: self.gamma * self.lambda_trace * t - g, trace, grad_q_value)
-        norm_trace = jnp.sum(jnp.abs(w.flatten()) for w in jax.tree.leaves(trace))
+        norm_trace = sum(jnp.sum(jnp.abs(w.flatten())) for w in jax.tree.leaves(trace))
         learning_rate = jnp.minimum(1 / (2 * jnp.maximum(abs(td_error), 1.0) * norm_trace), 1.0)
 
         params = jax.tree.map(lambda p, t: p - learning_rate * td_error * t, params, trace)
 
-        trace = jnp.where(
-            sample.random_action or sample.is_terminal, jax.tree.map(lambda w: jnp.zeros_like(w))(trace), trace
+        trace = jax.lax.cond(
+            sample.random_action | sample.is_terminal,
+            lambda t: jax.tree.map(lambda w: jnp.zeros_like(w), t),
+            lambda t: t,
+            trace,
         )
 
         return params, trace, learning_rate, jnp.square(td_error)

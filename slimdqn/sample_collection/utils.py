@@ -1,12 +1,11 @@
 import jax
 import jax.numpy as jnp
-from dataclasses import dataclass
 from functools import partial
 import numpy as np
+from flax import struct
 
 
-@dataclass
-class Sample:
+class Sample(struct.PyTreeNode):
     state: np.ndarray[np.int8]
     action: np.uint
     reward: np.float32
@@ -19,7 +18,7 @@ def update_normalize_params(x, mean, stat, count):
     count += 1
     new_mean = mean + (x - mean) / count
     stat += (x - mean) * (x - new_mean)
-    variance = stat / (count - 1) if count >= 2 else 1
+    variance = jnp.where(count >= 2, stat / (count - 1), 1)
     return new_mean, stat, count, variance
 
 
@@ -60,7 +59,7 @@ class SampleCollector:
 
     def __call__(self, key, params, n_training_steps: int):
         state = self.env.state
-        action, random_action = self.select_action(params, state, key, n_training_steps).item()
+        action, random_action = self.select_action(params, state, key, n_training_steps)
 
         reward, absorbing = self.env.step(action)
         episode_end = absorbing or self.env.n_steps >= self.horizon
