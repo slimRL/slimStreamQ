@@ -99,13 +99,6 @@ def add_base_arguments(parser: argparse.ArgumentParser):
         default=10_000,
     )
     parser.add_argument(
-        "-tup",
-        "--target_update_period",
-        help="Number of training steps before updating the target Q-network.",
-        type=int,
-        default=200,
-    )
-    parser.add_argument(
         "-ee",
         "--epsilon_end",
         help="Ending value for the linear decaying epsilon used for exploration.",
@@ -122,5 +115,5 @@ def add_base_arguments(parser: argparse.ArgumentParser):
 
 
 @output_added_arguments
-def add_dqn_arguments(parser: argparse.ArgumentParser):
+def add_qlambda_arguments(parser: argparse.ArgumentParser):
     pass

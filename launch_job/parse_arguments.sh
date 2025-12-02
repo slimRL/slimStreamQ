@@ -37,6 +37,10 @@ function parse_arguments() {
                 shift
                 shift
                 ;;
+            -gpu)
+                GPU=true
+                shift
+                ;;
             -?* | ?*)
                 ARGS="$ARGS $1"
                 shift
@@ -56,6 +60,10 @@ function parse_arguments() {
     if [[ $N_PARALLEL_SEEDS == "" ]]
     then
         N_PARALLEL_SEEDS=1
+    fi
+    if [[ $GPU == "" ]]
+    then
+        GPU=false
     fi
 
     [ -d experiments/$ENV_NAME/logs/$EXPERIMENT_NAME/$ALGO_NAME ] || mkdir -p experiments/$ENV_NAME/logs/$EXPERIMENT_NAME/$ALGO_NAME

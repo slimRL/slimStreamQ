@@ -4,11 +4,11 @@ import optax
 from tqdm import tqdm
 
 from experiments.base.utils import save_data
-from slimdqn.algorithms.dqn import DQN
-from slimdqn.sample_collection.utils import SampleCollector
+from slimstreamq.algorithms.qlambda import QLambda
+from slimstreamq.sample_collection.utils import SampleCollector
 
 
-def train(key: jax.random.PRNGKey, p: dict, agent: DQN, env):
+def train(key: jax.random.PRNGKey, p: dict, agent: QLambda, env):
     n_training_steps = 0
     sample_collector = SampleCollector(
         env,
@@ -38,10 +38,6 @@ def train(key: jax.random.PRNGKey, p: dict, agent: DQN, env):
                 episode_lengths_per_epoch[idx_epoch].append(0)
 
             agent.update_online_params(sample)
-            target_updated, logs = agent.update_target_params(n_training_steps)
-
-            if target_updated:
-                p["wandb"].log({"n_training_steps": n_training_steps, **logs})
 
         avg_return = np.mean(episode_returns_per_epoch[idx_epoch])
         avg_length_episode = np.mean(episode_lengths_per_epoch[idx_epoch])
@@ -53,6 +49,7 @@ def train(key: jax.random.PRNGKey, p: dict, agent: DQN, env):
                 "n_training_steps": n_training_steps,
                 "avg_return": avg_return,
                 "avg_length_episode": avg_length_episode,
+                **agent.get_logs(),
             }
         )
 

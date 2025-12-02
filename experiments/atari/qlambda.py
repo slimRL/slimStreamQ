@@ -5,8 +5,8 @@ import jax
 
 from experiments.base.dqn import train
 from experiments.base.utils import prepare_logs
-from slimdqn.environments.atari import AtariEnv
-from slimdqn.algorithms.dqn import DQN
+from slimstreamq.environments.atari import AtariEnv
+from slimstreamq.algorithms.qlambda import QLambda
 
 
 def run(argvs=sys.argv[1:]):
@@ -16,7 +16,7 @@ def run(argvs=sys.argv[1:]):
     q_key, train_key = jax.random.split(jax.random.PRNGKey(p["seed"]))
 
     env = AtariEnv(p["experiment_name"].split("_")[-1])
-    agent = DQN(
+    agent = QLambda(
         q_key,
         (env.state_height, env.state_width, env.n_stacked_frames),
         env.n_actions,
