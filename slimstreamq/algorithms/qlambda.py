@@ -18,7 +18,6 @@ class QLambda:
         architecture_type: str,
         gamma: float,
         lambda_trace: float,
-        target_update_period: int,
     ):
         self.network = DQNNet(features, architecture_type, n_actions)
         self.params = self.network.init(key, jnp.zeros(observation_dim, dtype=jnp.float32))
@@ -27,7 +26,6 @@ class QLambda:
 
         self.gamma = gamma
         self.lambda_trace = lambda_trace
-        self.target_update_period = target_update_period
         self.cumulated_loss = 0
         self.avg_learning_rate = 0
 

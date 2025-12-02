@@ -24,7 +24,6 @@ def run(argvs=sys.argv[1:]):
         architecture_type=p["architecture_type"],
         gamma=p["gamma"],
         lambda_trace=p["lambda_trace"],
-        target_update_period=p["target_update_period"],
     )
     train(train_key, p, agent, env)
 
